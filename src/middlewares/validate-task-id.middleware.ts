@@ -18,17 +18,18 @@ export const validateTaskId = (
     );
     return;
   }
-  if (id.trim().length > 120) {
+  const numericId = Number(id.trim());
+  if (!/^\d+$/.test(id.trim()) || !Number.isSafeInteger(numericId) || numericId < 1) {
     next(
       new AppError(
         "La solicitud contiene datos inválidos.",
         422,
         "VALIDATION_ERROR",
-        [{ field: "id", message: "No debe superar 120 caracteres." }],
+        [{ field: "id", message: "Debe ser un número entero positivo." }],
       ),
     );
     return;
   }
-  res.locals.taskId = id.trim();
+  res.locals.taskId = numericId;
   next();
 };
