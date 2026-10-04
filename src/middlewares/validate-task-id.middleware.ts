@@ -1,35 +1,19 @@
 import type { NextFunction, Request, Response } from "express";
+import { Types } from "mongoose";
 import { AppError } from "../errors/app-error.js";
-
 export const validateTaskId = (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction,
+  value: string,
 ): void => {
-  const id: unknown = req.params?.id;
-  if (typeof id !== "string" || !id.trim()) {
-    next(
-      new AppError(
-        "La solicitud contiene datos inválidos.",
-        422,
-        "VALIDATION_ERROR",
-        [{ field: "id", message: "Debe ser texto no vacío." }],
-      ),
-    );
+  const isObjectId =
+    Types.ObjectId.isValid(value) &&
+    new Types.ObjectId(value).toHexString() === value.toLowerCase();
+  if (!isObjectId) {
+    next(new AppError("El id debe ser un ObjectId válido.", 400, "INVALID_ID"));
     return;
   }
-  const numericId = Number(id.trim());
-  if (!/^\d+$/.test(id.trim()) || !Number.isSafeInteger(numericId) || numericId < 1) {
-    next(
-      new AppError(
-        "La solicitud contiene datos inválidos.",
-        422,
-        "VALIDATION_ERROR",
-        [{ field: "id", message: "Debe ser un número entero positivo." }],
-      ),
-    );
-    return;
-  }
-  res.locals.taskId = numericId;
+  res.locals.taskId = value;
   next();
 };
