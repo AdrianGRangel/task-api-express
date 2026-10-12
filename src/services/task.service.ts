@@ -1,6 +1,11 @@
 import mongoose, { type HydratedDocument } from "mongoose";
 import { AppError } from "../errors/app-error.js";
-import { TaskModel, type Task, type TaskPersistence } from "../models/task.js";
+import {
+  TaskModel,
+  type Task,
+  type TaskPersistence,
+  type TaskUpdate,
+} from "../models/task.js";
 const toTask = (document: HydratedDocument<TaskPersistence>): Task => ({
   id: document._id.toString(),
   title: document.title,
@@ -59,11 +64,14 @@ export const createTask = async (title: string): Promise<Task> => {
     throw mapPersistenceError(error);
   }
 };
-export const completeTask = async (id: string): Promise<Task> => {
+export const updateTask = async (
+  id: string,
+  changes: TaskUpdate,
+): Promise<Task> => {
   try {
     const document = await TaskModel.findByIdAndUpdate(
       id,
-      { status: "completed" },
+      { $set: changes },
       { new: true, runValidators: true },
     );
     if (!document) {
@@ -78,6 +86,8 @@ export const completeTask = async (id: string): Promise<Task> => {
     throw mapPersistenceError(error);
   }
 };
+export const completeTask = async (id: string): Promise<Task> =>
+  updateTask(id, { status: "completed" });
 export const deleteTask = async (id: string): Promise<void> => {
   try {
     const document = await TaskModel.findByIdAndDelete(id);
