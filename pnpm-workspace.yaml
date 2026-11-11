@@ -1,4 +1,8 @@
+packages:
+  - client
+
 allowBuilds:
+  '@scarf/scarf': false
   esbuild: true
 minimumReleaseAgeExclude:
   - jose@6.2.13
